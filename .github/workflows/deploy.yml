@@ -1,0 +1,23 @@
+name: Deploy Static Site to Azure
+
+on:
+  push:
+    branches: [ "main" ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Baixar o código do repositório
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # 2. Configurar permissões da chave SSH
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/azure-key
+          chmod 600 ~/.ssh/azure-key
+      # 3. Sincronizar arquivos para a VM via rsync
+      - name: Deploy Files
+        run: |
+          rsync -avz --delete -e "ssh -i ~/.ssh/azure-key -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.AZURE_USERNAME }}@${{ secrets.AZURE_VM_IP }}:/var/www/html/

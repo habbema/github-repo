@@ -1,0 +1,28 @@
+---
+- name: Configurar servidor web
+  hosts: all
+  become: yes
+  tasks:
+    - name: Atualizar cache de pacotes
+      apt:
+        update_cache: yes
+
+    - name: Instalar Apache e PHP
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apache2
+        - php
+
+    - name: Garantir serviço Apache ativo
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Criar diretório web
+      file:
+        path: /var/www/html
+        state: directory
+        mode: '0755'
